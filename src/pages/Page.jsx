@@ -12,7 +12,7 @@ export const Page = ({ title, content, imageContent, menuItems }) => {
         <div
             className={`${isHomePage ? 'bg-cover bg-center' : 'bg-none'} relative min-h-screen`}
             style={{
-                backgroundImage: isHomePage ? 'url("/assets/background.png")' : 'none',
+                backgroundImage: isHomePage ? 'url("")' : 'none',
             }}
         >
             {/* Render NavBar inside Page */}
@@ -36,7 +36,7 @@ export const Page = ({ title, content, imageContent, menuItems }) => {
                         ) : (
                             ""
                         )}
-                        <div className="py-6"> {/* Added padding on mobile */}
+                        <div className="font-serif py-6"> {/* Added padding on mobile */}
                             {content && content.nodeType ? documentToReactComponents(content) : content}
                         </div>
 
