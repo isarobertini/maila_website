@@ -13,7 +13,6 @@ export const Page = ({ title, content, imageContent, menuItems }) => {
             className={`${isHomePage ? 'bg-cover bg-center' : 'bg-none'} relative min-h-screen`}
             style={{
                 backgroundImage: isHomePage ? 'url("/assets/background.png")' : 'none',
-                backgroundSize: isHomePage ? '140%' : 'none', // Make the background 140% larger
             }}
         >
             {/* Render NavBar inside Page */}
