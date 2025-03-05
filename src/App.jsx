@@ -14,9 +14,9 @@ export const App = () => {
   const [homePageContent, setHomePageContent] = useState(null);
 
   const backgrounds = [
-    { image: "/assets/bg1.webp", textColor: "text-purple-500" },
+    { image: "/assets/bg1.webp", textColor: "text-purple-300" },
     { image: "/assets/bg2.webp", textColor: "text-black" },
-    { image: "/assets/bg3.webp", textColor: "text-yellow-500" }
+    { image: "/assets/bg3.webp", textColor: "text-yellow-300" }
   ];
 
   const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
