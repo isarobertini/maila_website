@@ -57,18 +57,19 @@ export const App = () => {
     fetchNavigationItems();
   }, []);
 
-  // Select only one image based on the random background
-  const selectedImage = homePageContent?.imageContent?.length
-    ? homePageContent.imageContent[backgrounds.indexOf(randomBg)]?.fields?.file?.url || null
-    : null;
+  // Select the correct image and title based on the background selection
+  const selectedBackgroundIndex = backgrounds.indexOf(randomBg);
+  const selectedImageContent = homePageContent?.imageContent?.[selectedBackgroundIndex] || null;
+  const selectedImageUrl = selectedImageContent?.fields?.file?.url || null;
+  const selectedImageTitle = selectedImageContent?.fields?.title || 'Default Title';
 
   console.log("Selected Background:", randomBg);
-  console.log("Selected Image for Home:", selectedImage);
+  console.log("Selected Image URL for Home:", selectedImageUrl);
+  console.log("Selected Image Title for Home:", selectedImageTitle);
 
   return (
     <Router>
       <Routes>
-        {/* Home page - use the homePageContent directly here */}
         {homePageContent && (
           <Route
             path="/"
@@ -80,15 +81,15 @@ export const App = () => {
                 menuItems={menuItems}
                 isHomePage={true}
                 background={randomBg}
-                externalExhibitionLink={homePageContent.externalExhibitionLink} // Pass externalLink for home page
-                externalTextLink={homePageContent.externalTextLink} // Pass externalTextLink for home page
-                externalMediaLink={homePageContent.externalMediaLink} // Pass externalMediaLink for home page
+                selectedImage={selectedImageUrl} // Pass the selected image URL
+                externalExhibitionLink={homePageContent.externalExhibitionLink}
+                externalTextLink={homePageContent.externalTextLink}
+                externalMediaLink={homePageContent.externalMediaLink}
               />
             }
           />
         )}
 
-        {/* Other pages */}
         {menuItems
           .filter((item) => item.slug !== '/')
           .map((item) => (
@@ -99,12 +100,12 @@ export const App = () => {
                 <Page
                   title={item.title}
                   content={item.content}
-                  imageContent={item.imageContent.map(img => img?.fields?.file?.url).filter(Boolean)} // Pass all images for other pages
+                  imageContent={item.imageContent.map(img => img?.fields?.file?.url).filter(Boolean)}
                   menuItems={menuItems}
                   isHomePage={false}
-                  externalExhibitionLink={item.externalExhibitionLink} // Pass externalExhibitionLink for other pages
-                  externalTextLink={item.externalTextLink} // Pass externalTextLink for other pages
-                  externalMediaLink={item.externalMediaLink} // Pass externalMediaLink for other pages
+                  externalExhibitionLink={item.externalExhibitionLink}
+                  externalTextLink={item.externalTextLink}
+                  externalMediaLink={item.externalMediaLink}
                 />
               }
             />

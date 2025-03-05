@@ -3,7 +3,19 @@ import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import { NavBar } from '../common/NavBar.jsx';
 import { ImagePopUp } from '../reusable components/imagePopUp.jsx';
 
-export const Page = ({ title, content, imageContent, menuItems, isHomePage, background, externalExhibitionLink, externalTextLink, externalMediaLink }) => {
+export const Page = ({
+    title,
+    content,
+    imageContent,
+    menuItems,
+    isHomePage,
+    background,
+    selectedImage,
+    selectedImageTitle,
+    externalExhibitionLink,
+    externalTextLink,
+    externalMediaLink
+}) => {
     console.log("Page Content:", content);
     console.log("External Exhibition Link:", externalExhibitionLink);
     console.log("External Text Link:", externalTextLink);
@@ -21,14 +33,16 @@ export const Page = ({ title, content, imageContent, menuItems, isHomePage, back
                 <div className="max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 gap-4">
                         {/* Display only one image on the homepage */}
-                        {imageContent?.length > 0 && isHomePage ? (
-                            <ImagePopUp
-                                key={0}
-                                src={imageContent[0]} // Display only the first image
-                                alt="Home Page Image"
-                                className="w-full h-auto mx-auto"
-                                onError={(e) => e.target.style.display = 'none'} // Hide broken images
-                            />
+                        {selectedImage && isHomePage ? (
+                            <div>
+                                <h2>{selectedImageTitle}</h2>
+                                <ImagePopUp
+                                    src={selectedImage} // Display only the selected image
+                                    alt={selectedImageTitle}
+                                    className="w-full h-auto mx-auto"
+                                    onError={(e) => e.target.style.display = 'none'} // Hide broken images
+                                />
+                            </div>
                         ) : null}
 
                         {/* Display all images on other pages */}
