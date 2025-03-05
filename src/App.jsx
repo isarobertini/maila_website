@@ -63,10 +63,6 @@ export const App = () => {
   const selectedImageUrl = selectedImageContent?.fields?.file?.url || null;
   const selectedImageTitle = selectedImageContent?.fields?.title || 'Default Title';
 
-  console.log("Selected Background:", randomBg);
-  console.log("Selected Image URL for Home:", selectedImageUrl);
-  console.log("Selected Image Title for Home:", selectedImageTitle);
-
   return (
     <Router>
       <Routes>
@@ -77,11 +73,12 @@ export const App = () => {
               <Page
                 title={homePageContent.title}
                 content={homePageContent.content}
-                imageContent={homePageContent.imageContent.map(img => img?.fields?.file?.url).filter(Boolean)} // Pass home page image content
+                imageContent={homePageContent.imageContent} // Pass home page image content directly
                 menuItems={menuItems}
                 isHomePage={true}
                 background={randomBg}
                 selectedImage={selectedImageUrl} // Pass the selected image URL
+                // Pass the selected image title
                 externalExhibitionLink={homePageContent.externalExhibitionLink}
                 externalTextLink={homePageContent.externalTextLink}
                 externalMediaLink={homePageContent.externalMediaLink}
@@ -100,7 +97,7 @@ export const App = () => {
                 <Page
                   title={item.title}
                   content={item.content}
-                  imageContent={item.imageContent.map(img => img?.fields?.file?.url).filter(Boolean)}
+                  imageContent={item.imageContent} // Pass image content directly for each page
                   menuItems={menuItems}
                   isHomePage={false}
                   externalExhibitionLink={item.externalExhibitionLink}

@@ -31,11 +31,11 @@ export const Page = ({
             </div>
             <div className="pt-20 px-4 md:px-8">
                 <div className="max-w-4xl mx-auto">
-                    <div className="grid grid-cols-1 gap-4">
-                        {/* Display only one image on the homepage */}
+                    <div className="grid grid-cols-1 gap-4 font-serif">
+                        {/* Display only the selected image and title on the homepage */}
                         {selectedImage && isHomePage ? (
                             <div>
-                                <h2>{selectedImageTitle}</h2>
+                                <h2 className='text-base'>{selectedImageTitle}</h2>
                                 <ImagePopUp
                                     src={selectedImage} // Display only the selected image
                                     alt={selectedImageTitle}
@@ -48,13 +48,25 @@ export const Page = ({
                         {/* Display all images on other pages */}
                         {!isHomePage && imageContent?.length > 0 ? (
                             imageContent.map((image, index) => (
-                                <ImagePopUp
-                                    key={index}
-                                    src={image}
-                                    alt="Page Image"
-                                    className="w-full h-auto mx-auto"
-                                    onError={(e) => e.target.style.display = 'none'}
-                                />
+                                <div key={index} className="my-4">
+                                    {/* Display image */}
+                                    <ImagePopUp
+                                        src={image.fields?.file?.url}
+                                        alt={image.fields?.title || "Page Image"}
+                                        className="w-full h-auto mx-auto"
+                                        onError={(e) => e.target.style.display = 'none'} // Hide broken images
+                                    />
+
+                                    {/* Display image title */}
+                                    {image.fields?.title && (
+                                        <h3 className="text-base italic">{image.fields.title}</h3>
+                                    )}
+
+                                    {/* Display image description */}
+                                    {image.fields?.description && (
+                                        <p className="text-sm">{image.fields.description}</p>
+                                    )}
+                                </div>
                             ))
                         ) : null}
 
