@@ -11,7 +11,7 @@ export const NavBar = ({ menuItems, textColor }) => {
                     <li key={item.id}>
                         <Link
                             to={item.slug}
-                            className={`font-medium hover:underline transition ${location.pathname === item.slug ? 'underline' : ''}`}
+                            className={`font-semibold hover:underline transition ${location.pathname === item.slug ? 'underline' : ''}`}
                         >
                             — {item.title}
                         </Link>

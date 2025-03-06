@@ -13,12 +13,14 @@ export const App = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [homePageContent, setHomePageContent] = useState(null);
 
+  // Define your backgrounds and their respective text colors
   const backgrounds = [
-    { image: "/assets/bg1.webp", textColor: "text-purple-300" },
-    { image: "/assets/bg2.webp", textColor: "text-black" },
-    { image: "/assets/bg3.webp", textColor: "text-yellow-300" }
+    { image: "/assets/bg1.webp", textColor: "#c4bed0" }, // Lavender Gray
+    { image: "/assets/bg2.webp", textColor: "#172212" }, // Deep Olive
+    { image: "/assets/bg3.webp", textColor: "#fde047" }  // Tailwind's yellow-300 equivalent
   ];
 
+  // Select a random background
   const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
 
   useEffect(() => {
@@ -78,10 +80,10 @@ export const App = () => {
                 isHomePage={true}
                 background={randomBg}
                 selectedImage={selectedImageUrl} // Pass the selected image URL
-                // Pass the selected image title
                 externalExhibitionLink={homePageContent.externalExhibitionLink}
                 externalTextLink={homePageContent.externalTextLink}
                 externalMediaLink={homePageContent.externalMediaLink}
+                textColor={randomBg.textColor} // Pass text color from background
               />
             }
           />
@@ -103,6 +105,7 @@ export const App = () => {
                   externalExhibitionLink={item.externalExhibitionLink}
                   externalTextLink={item.externalTextLink}
                   externalMediaLink={item.externalMediaLink}
+                  textColor="#000000" // Set default text color for other pages
                 />
               }
             />
