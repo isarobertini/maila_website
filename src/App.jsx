@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createClient } from 'contentful';
 import { Page } from './pages/Page.jsx';
+import { LazyBackground } from './reusable components/lazyBackground.jsx';
 
-// Fetching credentials from the environment variables
 const client = createClient({
   space: import.meta.env.VITE_SPACE_ID,
   accessToken: import.meta.env.VITE_ACCESS_TOKEN,
@@ -13,15 +13,22 @@ export const App = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [homePageContent, setHomePageContent] = useState(null);
 
-  // Define your backgrounds and their respective text colors
   const backgrounds = [
-    { image: "/assets/bg1.webp", textColor: "#c4bed0" }, // Lavender Gray
-    { image: "/assets/bg2.webp", textColor: "#172212" }, // Deep Olive
-    { image: "/assets/bg3.webp", textColor: "#fde047" }  // Tailwind's yellow-300 equivalent
+    { image: "/assets/bg1.webp", textColor: "#c4bed0" },
+    { image: "/assets/bg2.webp", textColor: "#172212" },
+    { image: "/assets/bg3.webp", textColor: "#fde047" }
   ];
 
-  // Select a random background
   const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+  // Preload background images
+  useEffect(() => {
+    const preloadImage = new Image();
+    preloadImage.src = randomBg.image;  // Preload the background image
+    preloadImage.onload = () => {
+      console.log("Image preloaded successfully.");
+    };
+  }, [randomBg.image]);
 
   useEffect(() => {
     async function fetchNavigationItems() {
@@ -30,7 +37,6 @@ export const App = () => {
           content_type: 'navigationMenu',
           order: 'fields.order',
         });
-
         const items = response.items.map((item) => ({
           id: item.sys.id,
           title: item.fields.title || 'Untitled',
@@ -45,12 +51,8 @@ export const App = () => {
 
         setMenuItems(items);
 
-        // Find home page content (assuming it has a slug of '/')
         const home = items.find((item) => item.slug === '/');
         setHomePageContent(home || null);
-
-        console.log("Home Page Content:", home);
-        console.log("Home Page Images:", home?.imageContent || []);
       } catch (error) {
         console.error('Error fetching menu items:', error);
       }
@@ -59,7 +61,6 @@ export const App = () => {
     fetchNavigationItems();
   }, []);
 
-  // Select the correct image and title based on the background selection
   const selectedBackgroundIndex = backgrounds.indexOf(randomBg);
   const selectedImageContent = homePageContent?.imageContent?.[selectedBackgroundIndex] || null;
   const selectedImageUrl = selectedImageContent?.fields?.file?.url || null;
@@ -72,44 +73,43 @@ export const App = () => {
           <Route
             path="/"
             element={
-              <Page
-                title={homePageContent.title}
-                content={homePageContent.content}
-                imageContent={homePageContent.imageContent} // Pass home page image content directly
-                menuItems={menuItems}
-                isHomePage={true}
-                background={randomBg}
-                selectedImage={selectedImageUrl} // Pass the selected image URL
-                externalExhibitionLink={homePageContent.externalExhibitionLink}
-                externalTextLink={homePageContent.externalTextLink}
-                externalMediaLink={homePageContent.externalMediaLink}
-                textColor={randomBg.textColor} // Pass text color from background
-              />
+              <LazyBackground imageUrl={selectedImageUrl}>
+                <Page
+                  title={homePageContent.title}
+                  content={homePageContent.content}
+                  imageContent={homePageContent.imageContent}
+                  menuItems={menuItems}
+                  isHomePage={true}
+                  background={randomBg}
+                  selectedImage={selectedImageUrl}
+                  externalExhibitionLink={homePageContent.externalExhibitionLink}
+                  externalTextLink={homePageContent.externalTextLink}
+                  externalMediaLink={homePageContent.externalMediaLink}
+                  textColor={randomBg.textColor}
+                />
+              </LazyBackground>
             }
           />
         )}
-
-        {menuItems
-          .filter((item) => item.slug !== '/')
-          .map((item) => (
-            <Route
-              key={item.id}
-              path={item.slug}
-              element={
-                <Page
-                  title={item.title}
-                  content={item.content}
-                  imageContent={item.imageContent} // Pass image content directly for each page
-                  menuItems={menuItems}
-                  isHomePage={false}
-                  externalExhibitionLink={item.externalExhibitionLink}
-                  externalTextLink={item.externalTextLink}
-                  externalMediaLink={item.externalMediaLink}
-                  textColor="#000000" // Set default text color for other pages
-                />
-              }
-            />
-          ))}
+        {menuItems.filter((item) => item.slug !== '/').map((item) => (
+          <Route
+            key={item.id}
+            path={item.slug}
+            element={
+              <Page
+                title={item.title}
+                content={item.content}
+                imageContent={item.imageContent}
+                menuItems={menuItems}
+                isHomePage={false}
+                externalExhibitionLink={item.externalExhibitionLink}
+                externalTextLink={item.externalTextLink}
+                externalMediaLink={item.externalMediaLink}
+                textColor="#000000"
+              />
+            }
+          />
+        ))}
       </Routes>
     </Router>
   );
