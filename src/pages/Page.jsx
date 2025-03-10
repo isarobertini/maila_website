@@ -1,5 +1,6 @@
 import React from 'react';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
+import { BLOCKS, INLINES, MARKS } from '@contentful/rich-text-types';
 import { NavBar } from '../common/NavBar.jsx';
 import { ImagePopUp } from '../reusable components/imagePopUp.jsx';
 
@@ -15,7 +16,7 @@ export const Page = ({
     externalExhibitionLink,
     externalTextLink,
     externalMediaLink,
-    textColor // Now accepting textColor as a prop
+    textColor, // Now accepting textColor as a prop
 }) => {
     console.log("Page Content:", content);
     console.log("Selected Background:", background);
@@ -24,12 +25,37 @@ export const Page = ({
     console.log("External Text Link:", externalTextLink);
     console.log("External Media Link:", externalMediaLink);
 
+    // Define rich text rendering options
+    const options = {
+        renderMark: {
+            [MARKS.BOLD]: (text) => <strong>{text}</strong>,
+            [MARKS.ITALIC]: (text) => <em>{text}</em>,
+        },
+        renderNode: {
+            [BLOCKS.HEADING_1]: (node, children) => <h1 className="text-4xl font-bold mb-4">{children}</h1>,
+            [BLOCKS.HEADING_2]: (node, children) => <h2 className="text-3xl font-semibold mb-4">{children}</h2>,
+            [BLOCKS.HEADING_3]: (node, children) => <h3 className="text-2xl font-medium mb-4">{children}</h3>,
+            [BLOCKS.PARAGRAPH]: (node, children) => <p className="text-base leading-relaxed mb-4">{children}</p>, // Added mb-4
+            [INLINES.HYPERLINK]: (node, children) => (
+                <a
+                    href={node.data.uri}
+                    className="text-blue-500 underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {children}
+                </a>
+            ),
+        },
+    };
+
+
     return (
         <div
             className={`relative min-h-screen ${isHomePage ? "bg-cover bg-center" : "bg-white"}`}
             style={{
                 backgroundImage: isHomePage ? `url("${background.image}")` : "none",
-                color: textColor || "black" // Apply dynamic text color
+                color: textColor || "black", // Apply dynamic text color
             }}
         >
             {/* Navigation Bar */}
@@ -80,10 +106,10 @@ export const Page = ({
                             ))
                         )}
 
-                        {/* Display content */}
+                        {/* Display content with rich text formatting */}
                         <div className="font-serif py-6" style={{ color: textColor || "black" }}>
                             {content && content.nodeType
-                                ? documentToReactComponents(content) // Render rich text
+                                ? documentToReactComponents(content, options) // Use options here
                                 : content // If not rich text, display as is
                             }
                         </div>
