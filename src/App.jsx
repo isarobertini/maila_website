@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createClient } from 'contentful';
 import { Page } from './pages/Page.jsx';
-import { LazyBackground } from './reusable components/lazyBackground.jsx';
 
 const client = createClient({
   space: import.meta.env.VITE_SPACE_ID,
@@ -12,6 +11,7 @@ const client = createClient({
 export const App = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [homePageContent, setHomePageContent] = useState(null);
+  const [bgLoaded, setBgLoaded] = useState(false); // To track if background is loaded
 
   const backgrounds = [
     { image: "/assets/bg1.webp", textColor: "#c4bed0" },
@@ -27,6 +27,11 @@ export const App = () => {
     preloadImage.src = randomBg.image;  // Preload the background image
     preloadImage.onload = () => {
       console.log("Image preloaded successfully.");
+      setBgLoaded(true); // Set bgLoaded to true once the background image is loaded
+    };
+    preloadImage.onerror = () => {
+      console.error("Error loading background image.");
+      setBgLoaded(true); // You can still proceed if there's an error loading the background
     };
   }, [randomBg.image]);
 
@@ -69,25 +74,23 @@ export const App = () => {
   return (
     <Router>
       <Routes>
-        {homePageContent && (
+        {homePageContent && bgLoaded && (  // Only render when background is loaded
           <Route
             path="/"
             element={
-              <LazyBackground imageUrl={selectedImageUrl}>
-                <Page
-                  title={homePageContent.title}
-                  content={homePageContent.content}
-                  imageContent={homePageContent.imageContent}
-                  menuItems={menuItems}
-                  isHomePage={true}
-                  background={randomBg}
-                  selectedImage={selectedImageUrl}
-                  externalExhibitionLink={homePageContent.externalExhibitionLink}
-                  externalTextLink={homePageContent.externalTextLink}
-                  externalMediaLink={homePageContent.externalMediaLink}
-                  textColor={randomBg.textColor}
-                />
-              </LazyBackground>
+              <Page
+                title={homePageContent.title}
+                content={homePageContent.content}
+                imageContent={homePageContent.imageContent}
+                menuItems={menuItems}
+                isHomePage={true}
+                background={randomBg}
+                selectedImage={selectedImageUrl}
+                externalExhibitionLink={homePageContent.externalExhibitionLink}
+                externalTextLink={homePageContent.externalTextLink}
+                externalMediaLink={homePageContent.externalMediaLink}
+                textColor={randomBg.textColor}
+              />
             }
           />
         )}
