@@ -74,6 +74,8 @@ export const Page = ({
             [BLOCKS.HEADING_1]: (node, children) => <h1 className="text-4xl font-bold mb-4">{children}</h1>,
             [BLOCKS.HEADING_2]: (node, children) => <h2 className="text-3xl font-semibold mb-4">{children}</h2>,
             [BLOCKS.HEADING_3]: (node, children) => <h3 className="text-2xl font-medium mb-4">{children}</h3>,
+            [BLOCKS.HEADING_4]: (node, children) => <h4 className="text-xl font-semibold mb-4">{children}</h4>,
+            [BLOCKS.HEADING_5]: (node, children) => <h5 className="text-lg font-medium mb-4">{children}</h5>,
             [BLOCKS.PARAGRAPH]: (node, children) => <p className="text-base leading-relaxed mb-6">{children}</p>,
             [INLINES.HYPERLINK]: (node, children) => (
                 <a href={node.data.uri} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
@@ -82,6 +84,7 @@ export const Page = ({
             ),
         },
     };
+
 
     return (
         <div
