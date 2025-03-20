@@ -4,55 +4,9 @@ import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
 import { NavBar } from "../common/NavBar.jsx";
 import { ImagePopUp } from "../reusable components/imagePopUp.jsx";
 
-// Function to check the file extension to determine if it's an image or video
-const isImage = (url) => {
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(url?.split('.').pop().toLowerCase());
-};
-
-const isVideo = (url) => {
-    return ['mov', 'mp4', 'webm'].includes(url?.split('.').pop().toLowerCase());
-};
-// Function to handle and render the nested content properly
-const extractText = (children) => {
-    // If it's an array, flatten it into a string
-    return children
-        .map((child) => {
-            if (typeof child === 'string') {
-                return child;
-            } else if (React.isValidElement(child)) {
-                // If it's a React element, extract the children
-                return child.props.children;
-            }
-            return '';
-        })
-        .join('');  // Join everything into a single string
-};
-
-// Custom rendering of inline elements and underlined text
-const customRender = (node, children) => {
-    if (node.nodeType === BLOCKS.PARAGRAPH) {
-        // Flatten the content into a string
-        let content = extractText(children);
-
-        // Replace <br> tags with actual line breaks
-        content = content.replace(/<br\s*\/?>/g, '\n'); // Adds line breaks for <br> tags
-
-        return (
-            <p className="text-base leading-relaxed">
-                {content.split("\n").map((line, index) => (
-                    <span key={index}>{line}<br /></span> // Render line breaks for each new line
-                ))}
-            </p>
-        );
-    }
-
-    // Handle underlined text (mark rendering)
-    if (node.nodeType === MARKS.UNDERLINE) {
-        return <u>{children}</u>;
-    }
-
-    return <>{children}</>;  // Default render if no special handling needed
-};
+// Function to check if a file is an image or video
+const isImage = (url) => ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(url?.split('.').pop().toLowerCase());
+const isVideo = (url) => ['mov', 'mp4', 'webm'].includes(url?.split('.').pop().toLowerCase());
 
 export const Page = ({
     title,
@@ -60,43 +14,26 @@ export const Page = ({
     imageContent,
     menuItems,
     isHomePage,
-    selectedImage,
-    selectedImageTitle,
     externalExhibitionLink,
     externalTextLink,
     externalMediaLink,
     textColor,
 }) => {
-
+    // Define custom rendering options for Contentful rich text
     const options = {
-        renderMark: {
-            [MARKS.BOLD]: (text) => <strong>{text}</strong>, // Bold text
-            [MARKS.ITALIC]: (text) => <em>{text}</em>, // Italic text
-            [MARKS.UNDERLINE]: (text) => <u>{text}</u>, // Underlined text
-        },
         renderNode: {
-            [BLOCKS.HEADING_1]: (node, children) => <h1 className="text-4xl font-bold mb-4">{children}</h1>,
-            [BLOCKS.HEADING_2]: (node, children) => <h2 className="text-3xl font-semibold mb-4">{children}</h2>,
-            [BLOCKS.HEADING_3]: (node, children) => <h3 className="text-2xl font-medium mb-4">{children}</h3>,
-            [BLOCKS.HEADING_4]: (node, children) => <h4 className="text-xl font-semibold mb-4">{children}</h4>,
-            [BLOCKS.HEADING_5]: (node, children) => <h5 className="text-lg font-medium mb-4">{children}</h5>,
-
-            // Handle paragraph rendering and <br> detection
             [BLOCKS.PARAGRAPH]: (node, children) => {
-                let paragraphContent = extractText(children); // Flatten the content
-
-                // Replace <br> tags with actual line breaks
-                paragraphContent = paragraphContent.replace(/<br\s*\/?>/g, '\n');
-
-                return (
-                    <p className="text-base leading-relaxed">
-                        {paragraphContent.split("\n").map((line, index) => (
-                            <span key={index}>{line}<br /></span> // Render line breaks for each new line
-                        ))}
-                    </p>
-                );
+                // If Contentful sends an empty paragraph (new line), render a break tag
+                if (!children || children.length === 0 || children[0] === "") {
+                    return <br />;
+                }
+                return <p className="whitespace-pre-wrap leading-relaxed my-4">{children}</p>;
             },
-
+            [BLOCKS.HEADING_1]: (node, children) => <h1 className="text-4xl font-bold my-6">{children}</h1>,
+            [BLOCKS.HEADING_2]: (node, children) => <h2 className="text-3xl font-semibold my-5">{children}</h2>,
+            [BLOCKS.HEADING_3]: (node, children) => <h3 className="text-2xl font-medium my-4">{children}</h3>,
+            [BLOCKS.HEADING_4]: (node, children) => <h4 className="text-xl font-semibold my-3">{children}</h4>,
+            [BLOCKS.HEADING_5]: (node, children) => <h5 className="text-lg font-medium my-2">{children}</h5>,
             [INLINES.HYPERLINK]: (node, children) => (
                 <a href={node.data.uri} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
                     {children}
@@ -106,12 +43,7 @@ export const Page = ({
     };
 
     return (
-        <div
-            className="relative min-h-screen bg-white"
-            style={{
-                color: textColor || "black",
-            }}
-        >
+        <div className="relative min-h-screen bg-white" style={{ color: textColor || "black" }}>
             <div className="py-16">
                 <NavBar menuItems={menuItems} textColor={textColor || "black"} />
             </div>
@@ -119,101 +51,35 @@ export const Page = ({
             <div className="pt-20 px-4 md:px-8">
                 <div className="max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 gap-4 font-serif">
+                        {/* Render images/videos */}
+                        {imageContent?.map((media, index) => {
+                            const mediaUrl = media.fields?.file?.url;
+                            const title = media.fields?.title;
+                            return (
+                                <div key={index} className="my-4">
+                                    {isImage(mediaUrl) ? (
+                                        <ImagePopUp src={mediaUrl} alt={title || "Page Image"} className="w-full h-auto mx-auto" />
+                                    ) : isVideo(mediaUrl) ? (
+                                        <video controls className="w-full h-auto mx-auto">
+                                            <source src={mediaUrl} type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    ) : null}
+                                    {title && title !== 'empty123' && <h3 className="text-sm">{title}</h3>}
+                                    {media.fields?.description && <p className="text-xs">{media.fields.description}</p>}
+                                </div>
+                            );
+                        })}
 
-                        {/* For the Homepage: Loop through all images */}
-                        {isHomePage && imageContent?.length > 0 && (
-                            <div className="my-4">
-                                {imageContent.map((media, index) => {
-                                    const mediaUrl = media.fields?.file?.url;
-                                    const title = media.fields?.title;
-
-                                    return (
-                                        <div key={index} className="my-4">
-                                            {/* Check if it's an image */}
-                                            {isImage(mediaUrl) ? (
-                                                <ImagePopUp
-                                                    src={mediaUrl}
-                                                    alt={title || "Page Image"}
-                                                    className="w-full h-auto mx-auto"
-                                                />
-                                            ) : isVideo(mediaUrl) ? (
-                                                <div className="relative">
-                                                    <video controls className="w-full h-auto mx-auto">
-                                                        <source src={mediaUrl} type="video/mp4" />
-                                                        Your browser does not support the video tag.
-                                                    </video>
-                                                </div>
-                                            ) : null}
-
-                                            {/* Check if title is not "empty123", then display it */}
-                                            {title && title !== 'empty123' && (
-                                                <h3 style={{ color: textColor || 'black' }} className="text-sm">
-                                                    {title}
-                                                </h3>
-                                            )}
-
-                                            {media.fields?.description && (
-                                                <p style={{ color: textColor || 'black' }} className="text-xs">
-                                                    {media.fields.description}
-                                                </p>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* For other pages, display the images and videos as before */}
-                        {!isHomePage && imageContent?.length > 0 && (
-                            imageContent.map((media, index) => {
-                                const mediaUrl = media.fields?.file?.url;
-                                const title = media.fields?.title;
-
-                                return (
-                                    <div key={index} className="my-4">
-                                        {/* Check if it's an image */}
-                                        {isImage(mediaUrl) ? (
-                                            <ImagePopUp
-                                                src={mediaUrl}
-                                                alt={title || "Page Image"}
-                                                className="w-full h-auto mx-auto"
-                                            />
-                                        ) : isVideo(mediaUrl) ? (
-                                            <div className="relative">
-                                                <video controls className="w-full h-auto mx-auto">
-                                                    <source src={mediaUrl} type="video/mp4" />
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                        ) : null}
-
-                                        {/* Check if title is not "empty123", then display it */}
-                                        {title && title !== 'empty123' && (
-                                            <h3 style={{ color: textColor || 'black' }} className="text-sm">
-                                                {title}
-                                            </h3>
-                                        )}
-
-                                        {media.fields?.description && (
-                                            <p style={{ color: textColor || 'black' }} className="text-xs">
-                                                {media.fields.description}
-                                            </p>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        )}
-
-                        {/* Page Content */}
-                        <div className="font-serif py-6" style={{ color: textColor || "black" }}>
-                            {content && content.nodeType ? documentToReactComponents(content, options) : content}
+                        {/* Render Page Content */}
+                        <div className="space-y-4 font-serif py-6">
+                            {content && documentToReactComponents(content, options)}
                         </div>
 
                         {/* External Links */}
                         {(externalExhibitionLink || externalTextLink || externalMediaLink) && (
                             <div className="py-6 text-sm">
-                                <p className="">External Links:</p>
-
+                                <p>External Links:</p>
                                 {externalExhibitionLink && (
                                     <div className="py-2">
                                         <a href={externalExhibitionLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
@@ -221,7 +87,6 @@ export const Page = ({
                                         </a>
                                     </div>
                                 )}
-
                                 {externalTextLink && (
                                     <div className="py-2">
                                         <a href={externalTextLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
@@ -229,7 +94,6 @@ export const Page = ({
                                         </a>
                                     </div>
                                 )}
-
                                 {externalMediaLink && (
                                     <div className="py-2">
                                         <a href={externalMediaLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
