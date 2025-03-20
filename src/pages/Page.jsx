@@ -7,11 +7,52 @@ import { ImagePopUp } from "../reusable components/imagePopUp.jsx";
 // Function to check the file extension to determine if it's an image or video
 const isImage = (url) => {
     return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(url?.split('.').pop().toLowerCase());
-}
+};
 
 const isVideo = (url) => {
     return ['mov', 'mp4', 'webm'].includes(url?.split('.').pop().toLowerCase());
-}
+};
+// Function to handle and render the nested content properly
+const extractText = (children) => {
+    // If it's an array, flatten it into a string
+    return children
+        .map((child) => {
+            if (typeof child === 'string') {
+                return child;
+            } else if (React.isValidElement(child)) {
+                // If it's a React element, extract the children
+                return child.props.children;
+            }
+            return '';
+        })
+        .join('');  // Join everything into a single string
+};
+
+// Custom rendering of inline elements and underlined text
+const customRender = (node, children) => {
+    if (node.nodeType === BLOCKS.PARAGRAPH) {
+        // Flatten the content into a string
+        let content = extractText(children);
+
+        // Replace <br> tags with actual line breaks
+        content = content.replace(/<br\s*\/?>/g, '\n'); // Adds line breaks for <br> tags
+
+        return (
+            <p className="text-base leading-relaxed">
+                {content.split("\n").map((line, index) => (
+                    <span key={index}>{line}<br /></span> // Render line breaks for each new line
+                ))}
+            </p>
+        );
+    }
+
+    // Handle underlined text (mark rendering)
+    if (node.nodeType === MARKS.UNDERLINE) {
+        return <u>{children}</u>;
+    }
+
+    return <>{children}</>;  // Default render if no special handling needed
+};
 
 export const Page = ({
     title,
@@ -29,8 +70,9 @@ export const Page = ({
 
     const options = {
         renderMark: {
-            [MARKS.BOLD]: (text) => <strong>{text}</strong>,
-            [MARKS.ITALIC]: (text) => <em>{text}</em>,
+            [MARKS.BOLD]: (text) => <strong>{text}</strong>, // Bold text
+            [MARKS.ITALIC]: (text) => <em>{text}</em>, // Italic text
+            [MARKS.UNDERLINE]: (text) => <u>{text}</u>, // Underlined text
         },
         renderNode: {
             [BLOCKS.HEADING_1]: (node, children) => <h1 className="text-4xl font-bold mb-4">{children}</h1>,
@@ -38,7 +80,23 @@ export const Page = ({
             [BLOCKS.HEADING_3]: (node, children) => <h3 className="text-2xl font-medium mb-4">{children}</h3>,
             [BLOCKS.HEADING_4]: (node, children) => <h4 className="text-xl font-semibold mb-4">{children}</h4>,
             [BLOCKS.HEADING_5]: (node, children) => <h5 className="text-lg font-medium mb-4">{children}</h5>,
-            [BLOCKS.PARAGRAPH]: (node, children) => <p className="text-base leading-relaxed mb-6">{children}</p>,
+
+            // Handle paragraph rendering and <br> detection
+            [BLOCKS.PARAGRAPH]: (node, children) => {
+                let paragraphContent = extractText(children); // Flatten the content
+
+                // Replace <br> tags with actual line breaks
+                paragraphContent = paragraphContent.replace(/<br\s*\/?>/g, '\n');
+
+                return (
+                    <p className="text-base leading-relaxed">
+                        {paragraphContent.split("\n").map((line, index) => (
+                            <span key={index}>{line}<br /></span> // Render line breaks for each new line
+                        ))}
+                    </p>
+                );
+            },
+
             [INLINES.HYPERLINK]: (node, children) => (
                 <a href={node.data.uri} className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
                     {children}
