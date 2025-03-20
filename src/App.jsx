@@ -3,24 +3,29 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createClient } from 'contentful';
 import { Page } from './pages/Page.jsx';
 
+// Initialize the Contentful client using environment variables for space ID and access token
 const client = createClient({
-  space: import.meta.env.VITE_SPACE_ID,  // Make sure to set the correct environment variables
+  space: import.meta.env.VITE_SPACE_ID,
   accessToken: import.meta.env.VITE_ACCESS_TOKEN,
 });
 
 export const App = () => {
+  // State variables to hold menu items, home page content, and error messages
   const [menuItems, setMenuItems] = useState([]);
   const [homePageContent, setHomePageContent] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch navigation menu and homepage data from Contentful
+    // Async function to fetch navigation menu and homepage data from Contentful
     async function fetchNavigationItems() {
       try {
+        // Fetch navigation menu items ordered by the 'order' field
         const response = await client.getEntries({
-          content_type: 'navigationMenu',  // Ensure this matches your Contentful content type
+          content_type: 'navigationMenu',
           order: 'fields.order',
         });
 
+        // Map the response items to an array of objects containing necessary fields
         const items = response.items.map((item) => ({
           id: item.sys.id,
           title: item.fields.title || 'Untitled',
@@ -33,28 +38,41 @@ export const App = () => {
           externalMediaLink: item.fields.externalMediaLink || null,
         }));
 
+        // Set the menu items state
         setMenuItems(items);
 
-        // Find homepage content by slug '/'
+        // Find the homepage content by looking for an item with the slug '/'
         const home = items.find((item) => item.slug === '/');
         setHomePageContent(home || null);
       } catch (error) {
-        console.error('Error fetching menu items:', error);
+        // Set error state if the fetch fails
+        setError('Failed to load data. Please try again later.');
       }
     }
 
+    // Fetch navigation items when the component mounts
     fetchNavigationItems();
   }, []);
+
+  // If there's an error, display an error message
+  if (error) {
+    return (
+      <div className="error-message">
+        <h1>{error}</h1>
+      </div>
+    );
+  }
 
   return (
     <Router>
       <Routes>
         {homePageContent && (
+          // Route for the homepage
           <Route
             path="/"
             element={
               <Page
-                title={homePageContent.title}  // Pass the correct title here
+                title={homePageContent.title}
                 content={homePageContent.content}
                 imageContent={homePageContent.imageContent}
                 menuItems={menuItems}
@@ -67,13 +85,15 @@ export const App = () => {
             }
           />
         )}
+
+        {/* Routes for all other pages, excluding the homepage */}
         {menuItems.filter((item) => item.slug !== '/').map((item) => (
           <Route
             key={item.id}
             path={item.slug}
             element={
               <Page
-                title={item.title}  // Pass the correct title here
+                title={item.title}
                 content={item.content}
                 imageContent={item.imageContent}
                 menuItems={menuItems}

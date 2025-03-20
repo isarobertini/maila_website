@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
 import { NavBar } from "../common/NavBar.jsx";
@@ -19,6 +19,9 @@ export const Page = ({
     externalMediaLink,
     textColor,
 }) => {
+    // Error state to handle any rendering or content issues
+    const [error, setError] = useState(null);
+
     // Define custom rendering options for Contentful rich text
     const options = {
         renderNode: {
@@ -42,6 +45,15 @@ export const Page = ({
         },
     };
 
+    // If there's an error, display an error message
+    if (error) {
+        return (
+            <div className="error-message">
+                <h1>{error}</h1>
+            </div>
+        );
+    }
+
     return (
         <div className="relative min-h-screen bg-white" style={{ color: textColor || "black" }}>
             <div className="py-16">
@@ -53,27 +65,36 @@ export const Page = ({
                     <div className="grid grid-cols-1 gap-4 font-serif">
                         {/* Render images/videos */}
                         {imageContent?.map((media, index) => {
-                            const mediaUrl = media.fields?.file?.url;
-                            const title = media.fields?.title;
-                            return (
-                                <div key={index} className="my-4">
-                                    {isImage(mediaUrl) ? (
-                                        <ImagePopUp src={mediaUrl} alt={title || "Page Image"} className="w-full h-auto mx-auto" />
-                                    ) : isVideo(mediaUrl) ? (
-                                        <video controls className="w-full h-auto mx-auto">
-                                            <source src={mediaUrl} type="video/mp4" />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    ) : null}
-                                    {title && title !== 'empty123' && <h3 className="text-sm">{title}</h3>}
-                                    {media.fields?.description && <p className="text-xs">{media.fields.description}</p>}
-                                </div>
-                            );
+                            try {
+                                const mediaUrl = media.fields?.file?.url;
+                                const title = media.fields?.title;
+
+                                if (!mediaUrl) throw new Error('Media URL is missing');
+
+                                return (
+                                    <div key={index} className="my-4">
+                                        {isImage(mediaUrl) ? (
+                                            <ImagePopUp src={mediaUrl} alt={title || "Page Image"} className="w-full h-auto mx-auto" />
+                                        ) : isVideo(mediaUrl) ? (
+                                            <video controls className="w-full h-auto mx-auto">
+                                                <source src={mediaUrl} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        ) : null}
+                                        {title && title !== 'empty123' && <h3 className="text-sm">{title}</h3>}
+                                        {media.fields?.description && <p className="text-xs">{media.fields.description}</p>}
+                                    </div>
+                                );
+                            } catch (error) {
+                                // Set error state in case media URL is missing or there's another issue
+                                setError('Failed to load media content');
+                                return null;
+                            }
                         })}
 
                         {/* Render Page Content */}
                         <div className="space-y-4 font-serif py-6">
-                            {content && documentToReactComponents(content, options)}
+                            {content ? documentToReactComponents(content, options) : ''}
                         </div>
 
                         {/* External Links */}
