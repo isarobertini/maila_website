@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
 import { NavBar } from "../common/NavBar.jsx";
-import { ImagePopUp } from "../reusable components/imagePopUp.jsx"; // Removed Loader import
+import { ImagePopUp } from "../reusable components/imagePopUp.jsx";
 
 // Function to check the file extension to determine if it's an image or video
 const isImage = (url) => {
@@ -19,7 +19,6 @@ export const Page = ({
     imageContent,
     menuItems,
     isHomePage,
-    background,
     selectedImage,
     selectedImageTitle,
     externalExhibitionLink,
@@ -27,43 +26,6 @@ export const Page = ({
     externalMediaLink,
     textColor,
 }) => {
-    const [imagesLoaded, setImagesLoaded] = useState(0);
-    const totalImages = imageContent?.length + (selectedImage ? 1 : 0); // Count the selected image for homepage
-
-    // Function to handle image loading completion
-    const handleImageLoad = (imageSrc) => {
-        console.log("Image Loaded:", imageSrc); // Log the image source to verify the loading
-        setImagesLoaded((prev) => prev + 1);
-    };
-
-    // Effect to check if all images have loaded
-    useEffect(() => {
-        console.log("Images Loaded:", imagesLoaded); // Debugging the images loaded state
-        console.log("Total Images:", totalImages); // Debugging the total image count
-
-        // If the number of loaded images matches the total number of images
-        if (imagesLoaded === totalImages) {
-            console.log("All images are loaded!");
-        }
-    }, [imagesLoaded, totalImages]);
-
-    // Preload images before rendering
-    useEffect(() => {
-        const preloadImages = () => {
-            const imagesToPreload = [
-                selectedImage,
-                ...imageContent.map(image => image.fields?.file?.url),
-            ];
-            imagesToPreload.forEach((src) => {
-                const img = new Image();
-                img.src = src;
-                img.onload = () => handleImageLoad(src); // Trigger the image load handler
-                img.onerror = (e) => console.error("Image Error:", e.target.src);
-            });
-        };
-
-        preloadImages();
-    }, [imageContent, selectedImage]); // Trigger when images or selected image change
 
     const options = {
         renderMark: {
@@ -85,12 +47,10 @@ export const Page = ({
         },
     };
 
-
     return (
         <div
-            className={`relative min-h-screen ${isHomePage ? "bg-cover bg-center" : "bg-white"}`}
+            className="relative min-h-screen bg-white"
             style={{
-                backgroundImage: isHomePage ? `url("${background.image}")` : "none",
                 color: textColor || "black",
             }}
         >
@@ -102,55 +62,66 @@ export const Page = ({
                 <div className="max-w-4xl mx-auto">
                     <div className="grid grid-cols-1 gap-4 font-serif">
 
-                        {/* Homepage Selected Image */}
-                        {selectedImage && isHomePage && (
-                            <div className="relative">
-                                <h2 style={{ color: textColor || "black" }} className="text-base">
-                                    {selectedImageTitle}
-                                </h2>
+                        {/* For the Homepage: Loop through all images */}
+                        {isHomePage && imageContent?.length > 0 && (
+                            <div className="my-4">
+                                {imageContent.map((media, index) => {
+                                    const mediaUrl = media.fields?.file?.url;
+                                    const title = media.fields?.title;
 
-                                {/* Check if it's an image or video */}
-                                {isImage(selectedImage) ? (
-                                    <ImagePopUp
-                                        src={selectedImage}
-                                        alt={selectedImageTitle}
-                                        className="w-full h-auto mx-auto"
-                                        onLoad={() => handleImageLoad(selectedImage)} // Increment the loaded images counter when the image loads
-                                        onError={(e) => (e.target.style.display = "none")}
-                                    />
-                                ) : isVideo(selectedImage) ? (
-                                    <div className="relative">
-                                        <h3 style={{ color: textColor || "black" }} className="text-base">
-                                            {selectedImageTitle}
-                                        </h3>
-                                        <video controls className="w-full h-auto mx-auto">
-                                            <source src={selectedImage} type="video/mp4" />
-                                            Your browser does not support the video tag.
-                                        </video>
-                                    </div>
-                                ) : null}
+                                    return (
+                                        <div key={index} className="my-4">
+                                            {/* Check if it's an image */}
+                                            {isImage(mediaUrl) ? (
+                                                <ImagePopUp
+                                                    src={mediaUrl}
+                                                    alt={title || "Page Image"}
+                                                    className="w-full h-auto mx-auto"
+                                                />
+                                            ) : isVideo(mediaUrl) ? (
+                                                <div className="relative">
+                                                    <video controls className="w-full h-auto mx-auto">
+                                                        <source src={mediaUrl} type="video/mp4" />
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                </div>
+                                            ) : null}
+
+                                            {/* Check if title is not "empty", then display it */}
+                                            {title && title !== 'empty123' && (
+                                                <h3 style={{ color: textColor || 'black' }} className="text-sm">
+                                                    {title}
+                                                </h3>
+                                            )}
+
+                                            {media.fields?.description && (
+                                                <p style={{ color: textColor || 'black' }} className="text-xs">
+                                                    {media.fields.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
 
-                        {/* Image or Video Gallery */}
-                        {!isHomePage &&
-                            imageContent?.length > 0 &&
+                        {/* For other pages, display the images and videos as before */}
+                        {!isHomePage && imageContent?.length > 0 && (
                             imageContent.map((media, index) => {
                                 const mediaUrl = media.fields?.file?.url;
+                                const title = media.fields?.title;
+
                                 return (
                                     <div key={index} className="my-4">
-                                        {/* Check if it's an image or video */}
+                                        {/* Check if it's an image */}
                                         {isImage(mediaUrl) ? (
                                             <ImagePopUp
                                                 src={mediaUrl}
-                                                alt={media.fields?.title || "Page Image"}
+                                                alt={title || "Page Image"}
                                                 className="w-full h-auto mx-auto"
-                                                onLoad={() => handleImageLoad(mediaUrl)} // Increment the loaded images counter when the image loads
-                                                onError={(e) => (e.target.style.display = "none")}
                                             />
                                         ) : isVideo(mediaUrl) ? (
                                             <div className="relative">
-
                                                 <video controls className="w-full h-auto mx-auto">
                                                     <source src={mediaUrl} type="video/mp4" />
                                                     Your browser does not support the video tag.
@@ -158,18 +129,22 @@ export const Page = ({
                                             </div>
                                         ) : null}
 
-                                        {media.fields?.title && (
-                                            <h3 style={{ color: textColor || "black" }} className="text-base italic">
-                                                {media.fields.title}
+                                        {/* Check if title is not "empty", then display it */}
+                                        {title && title !== 'empty' && (
+                                            <h3 style={{ color: textColor || 'black' }} className="text-sm">
+                                                {title}
                                             </h3>
                                         )}
 
                                         {media.fields?.description && (
-                                            <p style={{ color: textColor || "black" }} className="text-sm">{media.fields.description}</p>
+                                            <p style={{ color: textColor || 'black' }} className="text-xs">
+                                                {media.fields.description}
+                                            </p>
                                         )}
                                     </div>
                                 );
-                            })}
+                            })
+                        )}
 
                         {/* Page Content */}
                         <div className="font-serif py-6" style={{ color: textColor || "black" }}>
@@ -178,8 +153,8 @@ export const Page = ({
 
                         {/* External Links */}
                         {(externalExhibitionLink || externalTextLink || externalMediaLink) && (
-                            <div className="py-6">
-                                <p className="font-semibold">External Links:</p>
+                            <div className="py-6 text-sm">
+                                <p className="">External Links:</p>
 
                                 {externalExhibitionLink && (
                                     <div className="py-2">
