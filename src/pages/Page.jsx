@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
 import { NavBar } from "../common/NavBar.jsx";
@@ -87,7 +87,7 @@ export const Page = ({
                                                 </div>
                                             ) : null}
 
-                                            {/* Check if title is not "empty", then display it */}
+                                            {/* Check if title is not "empty123", then display it */}
                                             {title && title !== 'empty123' && (
                                                 <h3 style={{ color: textColor || 'black' }} className="text-sm">
                                                     {title}
@@ -129,8 +129,8 @@ export const Page = ({
                                             </div>
                                         ) : null}
 
-                                        {/* Check if title is not "empty", then display it */}
-                                        {title && title !== 'empty' && (
+                                        {/* Check if title is not "empty123", then display it */}
+                                        {title && title !== 'empty123' && (
                                             <h3 style={{ color: textColor || 'black' }} className="text-sm">
                                                 {title}
                                             </h3>

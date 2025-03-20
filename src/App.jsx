@@ -54,11 +54,11 @@ export const App = () => {
             path="/"
             element={
               <Page
-                title={homePageContent.title}
+                title={homePageContent.title}  // Pass the correct title here
                 content={homePageContent.content}
-                imageContent={homePageContent.imageContent}  // Pass the entire imageContent array here
+                imageContent={homePageContent.imageContent}
                 menuItems={menuItems}
-                isHomePage={true}  // Specify it's the homepage
+                isHomePage={true}
                 externalExhibitionLink={homePageContent.externalExhibitionLink}
                 externalTextLink={homePageContent.externalTextLink}
                 externalMediaLink={homePageContent.externalMediaLink}
@@ -73,7 +73,7 @@ export const App = () => {
             path={item.slug}
             element={
               <Page
-                title={item.title}
+                title={item.title}  // Pass the correct title here
                 content={item.content}
                 imageContent={item.imageContent}
                 menuItems={menuItems}
