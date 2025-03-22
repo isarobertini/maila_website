@@ -58,12 +58,11 @@ export const Page = ({
     return (
         <div className="relative min-h-screen bg-white" style={{ color: textColor || "black" }}>
 
-            {/* Dynamic SEO Metadata */}
             <Helmet>
                 <title>{title ? `${title} | Susanna Maila` : "Susanna Maila"}</title>
                 <meta
                     name="description"
-                    content={content ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
+                    content={typeof content === 'string' ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
                 />
                 <meta
                     name="keywords"
@@ -76,13 +75,14 @@ export const Page = ({
                 <meta property="og:title" content={title} />
                 <meta
                     property="og:description"
-                    content={content ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
+                    content={typeof content === 'string' ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
                 />
                 <meta property="og:type" content="website" />
                 <meta property="og:url" content={window.location.href} />
                 <meta property="og:site_name" content="Susanna Maila" />
                 <meta property="og:locale" content="en_US" />
             </Helmet>
+
 
             <div className="py-16">
                 <NavBar menuItems={menuItems} textColor={textColor || "black"} />
