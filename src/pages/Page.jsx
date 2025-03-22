@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES, MARKS } from "@contentful/rich-text-types";
 import { NavBar } from "../common/NavBar.jsx";
@@ -56,6 +57,33 @@ export const Page = ({
 
     return (
         <div className="relative min-h-screen bg-white" style={{ color: textColor || "black" }}>
+
+            {/* Dynamic SEO Metadata */}
+            <Helmet>
+                <title>{title ? `${title} | Susanna Maila` : "Susanna Maila"}</title>
+                <meta
+                    name="description"
+                    content={content ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
+                />
+                <meta
+                    name="keywords"
+                    content="Susanna Maila, art, artist, exhibition, gallery, paintings, Academy of Fine Arts Vienna"
+                />
+                <meta name="author" content="Susanna Maila" />
+                {imageContent?.[0]?.fields?.file?.url && (
+                    <meta property="og:image" content={imageContent[0].fields.file.url} />
+                )}
+                <meta property="og:title" content={title} />
+                <meta
+                    property="og:description"
+                    content={content ? content.slice(0, 150) : "Susanna Maila is a painter born in Sweden, currently working between Berlin and Vienna."}
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={window.location.href} />
+                <meta property="og:site_name" content="Susanna Maila" />
+                <meta property="og:locale" content="en_US" />
+            </Helmet>
+
             <div className="py-16">
                 <NavBar menuItems={menuItems} textColor={textColor || "black"} />
             </div>
